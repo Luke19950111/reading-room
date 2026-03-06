@@ -4,7 +4,7 @@
 
 ## 在线预览
 
-> `https://<your-username>.github.io/ReadingRoom/`
+> https://luke19950111.github.io/reading-room/
 
 ## 功能特性
 
