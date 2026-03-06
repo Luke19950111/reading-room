@@ -63,6 +63,7 @@
     "error": "Failed to load. Please retry.",
     "retry": "Retry",
     "close": "Close",
-    "to": "to"
+    "to": "to",
+    "detailFetchError": "Some details could not be loaded. Showing available local data."
   }
 }

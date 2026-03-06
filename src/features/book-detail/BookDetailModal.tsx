@@ -5,6 +5,7 @@ import type { Book } from '@/types/book'
 import { useBookDetail } from '@/hooks/useBookDetail'
 import StarRating from '@/components/StarRating'
 import Skeleton from '@/components/Skeleton'
+import BookCoverFallback from '@/components/BookCoverFallback'
 
 interface BookDetailModalProps {
   book: Book | null
@@ -13,7 +14,11 @@ interface BookDetailModalProps {
 
 export default function BookDetailModal({ book, onClose }: BookDetailModalProps) {
   const { t } = useTranslation()
-  const { data: detail, isLoading } = useBookDetail(book)
+  const { data: detail, isLoading, isError, refetch } = useBookDetail(book)
+
+  const enrichedOk = !isLoading && !isError && !!detail
+  const coverUrl = detail?.coverUrl || book?.coverUrl
+  const isbn = detail?.isbn || book?.isbn
 
   useEffect(() => {
     if (book) {
@@ -76,26 +81,34 @@ export default function BookDetailModal({ book, onClose }: BookDetailModalProps)
             </button>
 
             <div className="flex flex-col sm:flex-row gap-6 p-6">
+              {/* Cover */}
               <div className="flex-shrink-0 mx-auto sm:mx-0">
                 {isLoading ? (
                   <Skeleton className="w-40 h-60 rounded-xl" />
                 ) : (
                   <div className="w-40 rounded-xl overflow-hidden shadow-lg">
-                    {detail?.coverUrl ? (
+                    {coverUrl ? (
                       <img
-                        src={detail.coverUrl}
+                        src={coverUrl}
                         alt={book.title}
                         className="w-full aspect-[2/3] object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                          ;(e.target as HTMLImageElement).nextElementSibling as HTMLElement
+                        }}
                       />
                     ) : (
-                      <div className="w-full aspect-[2/3] bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center p-4">
-                        <span className="text-white text-center font-bold text-sm">{book.title}</span>
-                      </div>
+                      <BookCoverFallback
+                        title={book.title}
+                        author={book.author}
+                        className="aspect-[2/3]"
+                      />
                     )}
                   </div>
                 )}
               </div>
 
+              {/* Info */}
               <div className="flex-1 min-w-0 space-y-4">
                 <div>
                   <h2 className="text-xl font-bold text-surface-900 dark:text-surface-100">
@@ -106,30 +119,34 @@ export default function BookDetailModal({ book, onClose }: BookDetailModalProps)
                   )}
                 </div>
 
+                {/* Local data - always available */}
                 <div className="space-y-2 text-sm">
                   <InfoRow label={t('book.author')} value={book.author} />
+
                   {isLoading ? (
                     <>
                       <Skeleton className="h-4 w-48" />
                       <Skeleton className="h-4 w-32" />
                     </>
-                  ) : (
+                  ) : enrichedOk ? (
                     <>
-                      {detail?.publisher && (
+                      {detail.publisher && (
                         <InfoRow label={t('book.publisher')} value={detail.publisher} />
                       )}
-                      {detail?.publishedDate && (
+                      {detail.publishedDate && (
                         <InfoRow label={t('book.publishDate')} value={detail.publishedDate} />
                       )}
-                      {detail?.pageCount && (
+                      {detail.pageCount && (
                         <InfoRow
                           label={t('book.pages')}
                           value={`${detail.pageCount} ${t('book.pagesUnit')}`}
                         />
                       )}
-                      {detail?.isbn && <InfoRow label={t('book.isbn')} value={detail.isbn} />}
                     </>
-                  )}
+                  ) : null}
+
+                  {isbn && <InfoRow label={t('book.isbn')} value={isbn} />}
+
                   {book.readDateStart && (
                     <InfoRow
                       label={t('book.readPeriod')}
@@ -160,29 +177,45 @@ export default function BookDetailModal({ book, onClose }: BookDetailModalProps)
               </div>
             </div>
 
+            {/* Bottom section: description / review / error */}
             <div className="px-6 pb-6 space-y-4">
+              {isError && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                  <svg className="w-5 h-5 flex-shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 flex-1">
+                    {t('common.detailFetchError')}
+                  </p>
+                  <button
+                    onClick={() => refetch()}
+                    className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline flex-shrink-0"
+                  >
+                    {t('common.retry')}
+                  </button>
+                </div>
+              )}
+
               {isLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-5/6" />
                   <Skeleton className="h-4 w-4/6" />
                 </div>
-              ) : (
-                <>
-                  {detail?.description && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
-                        {t('book.description')}
-                      </h3>
-                      <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">
-                        {detail.description}
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
+              ) : enrichedOk && detail.description ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
+                    {t('book.description')}
+                  </h3>
+                  <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">
+                    {detail.description}
+                  </p>
+                </div>
+              ) : !isError ? (
+                <p className="text-sm text-surface-400 italic">{t('book.noDescription')}</p>
+              ) : null}
 
-              {book.review && (
+              {book.review ? (
                 <div className="border-t border-surface-200 dark:border-surface-700 pt-4">
                   <h3 className="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
                     {t('book.review')}
@@ -190,6 +223,10 @@ export default function BookDetailModal({ book, onClose }: BookDetailModalProps)
                   <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed italic">
                     &ldquo;{book.review}&rdquo;
                   </p>
+                </div>
+              ) : (
+                <div className="border-t border-surface-200 dark:border-surface-700 pt-4">
+                  <p className="text-sm text-surface-400 italic">{t('book.noReview')}</p>
                 </div>
               )}
             </div>

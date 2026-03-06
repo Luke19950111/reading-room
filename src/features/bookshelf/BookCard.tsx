@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { Book } from '@/types/book'
 import { useState } from 'react'
 import { useBookCover } from '@/hooks/useBookCover'
+import BookCoverFallback from '@/components/BookCoverFallback'
 
 interface BookCardProps {
   book: Book
@@ -10,21 +11,13 @@ interface BookCardProps {
   onClick: (book: Book) => void
 }
 
-const placeholderColors = [
-  'from-primary-400 to-primary-600',
-  'from-emerald-400 to-emerald-600',
-  'from-violet-400 to-violet-600',
-  'from-rose-400 to-rose-600',
-  'from-amber-400 to-amber-600',
-]
-
 export default function BookCard({ book, index, onClick }: BookCardProps) {
   const { t } = useTranslation()
   const [imgError, setImgError] = useState(false)
-  const { data: coverUrl, isLoading: coverLoading } = useBookCover(book)
-  const colorClass = placeholderColors[index % placeholderColors.length]
+  const { data: coverUrl, isLoading: coverLoading, isError } = useBookCover(book)
 
   const resolvedCover = book.coverUrl || coverUrl
+  const showImage = resolvedCover && !imgError && !isError
 
   const statusLabel =
     book.status === 'reading'
@@ -66,9 +59,9 @@ export default function BookCard({ book, index, onClick }: BookCardProps) {
           transition={{ type: 'spring', stiffness: 300 }}
           style={{ transformStyle: 'preserve-3d', perspective: 800 }}
         >
-          {coverLoading ? (
+          {coverLoading && !resolvedCover ? (
             <div className="w-full h-full animate-pulse bg-surface-200 dark:bg-surface-700" />
-          ) : resolvedCover && !imgError ? (
+          ) : showImage ? (
             <img
               src={resolvedCover}
               alt={book.title}
@@ -77,13 +70,7 @@ export default function BookCard({ book, index, onClick }: BookCardProps) {
               onError={() => setImgError(true)}
             />
           ) : (
-            <div
-              className={`w-full h-full bg-gradient-to-br ${colorClass} flex items-center justify-center p-4`}
-            >
-              <span className="text-white text-center font-bold text-sm leading-tight drop-shadow-md">
-                {book.title}
-              </span>
-            </div>
+            <BookCoverFallback title={book.title} author={book.author} index={index} />
           )}
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
