@@ -50,7 +50,7 @@ function TimelineItem({ book, index }: { book: Book; index: number }) {
 
 function TimelineDot({ isInView, date }: { isInView: boolean; date: string }) {
   return (
-    <div className="flex flex-col items-center flex-shrink-0 w-10">
+    <div className="flex flex-col items-center flex-shrink-0 w-10 relative z-10">
       <motion.div
         className="w-4 h-4 rounded-full bg-primary-500 border-4 border-primary-100 dark:border-primary-900 shadow-md"
         initial={{ scale: 0 }}
