@@ -1,0 +1,68 @@
+{
+  "app": {
+    "title": "My Bookshelf",
+    "subtitle": "Track reading, share knowledge"
+  },
+  "nav": {
+    "bookshelf": "Bookshelf",
+    "stats": "Stats",
+    "timeline": "Timeline"
+  },
+  "filter": {
+    "all": "All",
+    "reading": "Reading",
+    "finished": "Finished"
+  },
+  "book": {
+    "author": "Author",
+    "publisher": "Publisher",
+    "publishDate": "Published",
+    "pages": "Pages",
+    "pagesUnit": "pages",
+    "isbn": "ISBN",
+    "readPeriod": "Read Period",
+    "rating": "Rating",
+    "review": "Review",
+    "description": "Description",
+    "tags": "Tags",
+    "statusReading": "Reading",
+    "statusFinished": "Finished",
+    "statusWishlist": "Wishlist",
+    "noReview": "No review yet",
+    "noDescription": "No description available"
+  },
+  "stats": {
+    "title": "Reading Stats",
+    "totalBooks": "Total Books",
+    "thisYear": "This Year",
+    "avgPerMonth": "Avg/Month",
+    "yearlyChart": "Yearly Reading",
+    "monthlyHeatmap": "Monthly Reading Heatmap",
+    "books": "books",
+    "booksUnit": "books"
+  },
+  "timeline": {
+    "title": "Reading Timeline"
+  },
+  "search": {
+    "placeholder": "Search title or author...",
+    "noResults": "No matching books found"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "zh-CN": "简体中文",
+    "en": "English",
+    "ja": "日本語"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Failed to load. Please retry.",
+    "retry": "Retry",
+    "close": "Close",
+    "to": "to"
+  }
+}
