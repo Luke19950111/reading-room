@@ -85,6 +85,35 @@ export async function enrichBookDetail(book: Book): Promise<BookDetail> {
   return { ...book }
 }
 
+export async function fetchBookCover(book: Book): Promise<string | undefined> {
+  if (book.coverUrl) return book.coverUrl
+
+  const cached = getCached(book.id)
+  if (cached?.coverUrl) return cached.coverUrl
+
+  const searchTerm = book.titleEn || book.title
+
+  const googleResult = await searchGoogleBooks(searchTerm)
+  if (googleResult?.coverUrl) {
+    setCache(book.id, { ...book, ...googleResult })
+    return googleResult.coverUrl
+  }
+
+  const olResult = await searchOpenLibrary(searchTerm)
+  if (olResult?.coverUrl) {
+    setCache(book.id, { ...book, ...olResult })
+    return olResult.coverUrl
+  }
+
+  if (book.isbn) {
+    const url = getOpenLibraryCoverByISBN(book.isbn)
+    setCache(book.id, { ...book, coverUrl: url })
+    return url
+  }
+
+  return undefined
+}
+
 export async function fetchBooks(): Promise<Book[]> {
   const res = await fetch(`${import.meta.env.BASE_URL}data/books.json`)
   if (!res.ok) throw new Error('Failed to load books data')

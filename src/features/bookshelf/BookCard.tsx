@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import type { Book } from '@/types/book'
 import { useState } from 'react'
+import { useBookCover } from '@/hooks/useBookCover'
 
 interface BookCardProps {
   book: Book
@@ -20,7 +21,10 @@ const placeholderColors = [
 export default function BookCard({ book, index, onClick }: BookCardProps) {
   const { t } = useTranslation()
   const [imgError, setImgError] = useState(false)
+  const { data: coverUrl, isLoading: coverLoading } = useBookCover(book)
   const colorClass = placeholderColors[index % placeholderColors.length]
+
+  const resolvedCover = book.coverUrl || coverUrl
 
   const statusLabel =
     book.status === 'reading'
@@ -62,9 +66,11 @@ export default function BookCard({ book, index, onClick }: BookCardProps) {
           transition={{ type: 'spring', stiffness: 300 }}
           style={{ transformStyle: 'preserve-3d', perspective: 800 }}
         >
-          {book.coverUrl && !imgError ? (
+          {coverLoading ? (
+            <div className="w-full h-full animate-pulse bg-surface-200 dark:bg-surface-700" />
+          ) : resolvedCover && !imgError ? (
             <img
-              src={book.coverUrl}
+              src={resolvedCover}
               alt={book.title}
               loading="lazy"
               className="w-full h-full object-cover"
