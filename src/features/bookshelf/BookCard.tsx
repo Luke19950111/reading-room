@@ -62,13 +62,25 @@ export default function BookCard({ book, index, onClick }: BookCardProps) {
           {coverLoading && !resolvedCover ? (
             <div className="w-full h-full animate-pulse bg-surface-200 dark:bg-surface-700" />
           ) : showImage ? (
-            <img
-              src={resolvedCover}
-              alt={book.title}
-              loading="lazy"
-              className="w-full h-full object-cover"
-              onError={() => setImgError(true)}
-            />
+            <>
+              <img
+                src={resolvedCover}
+                alt={book.title}
+                loading="lazy"
+                className="w-full h-full object-cover"
+                onError={() => setImgError(true)}
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement
+                  if (img.naturalWidth < 10 || img.naturalHeight < 10) {
+                    setImgError(true)
+                  }
+                }}
+              />
+              {/* Hidden fallback rendered behind image, shown instantly if img fails */}
+              <div className="absolute inset-0 -z-10">
+                <BookCoverFallback title={book.title} author={book.author} index={index} />
+              </div>
+            </>
           ) : (
             <BookCoverFallback title={book.title} author={book.author} index={index} />
           )}

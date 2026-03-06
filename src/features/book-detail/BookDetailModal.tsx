@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import type { Book } from '@/types/book'
@@ -15,6 +15,7 @@ interface BookDetailModalProps {
 export default function BookDetailModal({ book, onClose }: BookDetailModalProps) {
   const { t } = useTranslation()
   const { data: detail, isLoading, isError, refetch } = useBookDetail(book)
+  const [coverBroken, setCoverBroken] = useState(false)
 
   const enrichedOk = !isLoading && !isError && !!detail
   const coverUrl = detail?.coverUrl || book?.coverUrl
@@ -87,14 +88,17 @@ export default function BookDetailModal({ book, onClose }: BookDetailModalProps)
                   <Skeleton className="w-40 h-60 rounded-xl" />
                 ) : (
                   <div className="w-40 rounded-xl overflow-hidden shadow-lg">
-                    {coverUrl ? (
+                    {coverUrl && !coverBroken ? (
                       <img
                         src={coverUrl}
                         alt={book.title}
                         className="w-full aspect-[2/3] object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none'
-                          ;(e.target as HTMLImageElement).nextElementSibling as HTMLElement
+                        onError={() => setCoverBroken(true)}
+                        onLoad={(e) => {
+                          const img = e.target as HTMLImageElement
+                          if (img.naturalWidth < 10 || img.naturalHeight < 10) {
+                            setCoverBroken(true)
+                          }
                         }}
                       />
                     ) : (
