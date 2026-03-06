@@ -80,7 +80,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
-        <BrowserRouter basename="/ReadingRoom">
+        <BrowserRouter basename="/reading-room">
           <AppRoutes />
         </BrowserRouter>
       </ErrorBoundary>
